@@ -1,0 +1,15 @@
+# Entorno
+venv/
+.env
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Artefactos temporales de scripts de edición del .docx
+_tmp_tf/
+_tmp_tf_v4/
+
+# macOS
+.DS_Store
