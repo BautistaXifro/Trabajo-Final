@@ -16,12 +16,18 @@ def muestreo_estratificado(df_full, n_muestra, semilla=SEMILLA):
     """Al menos 1 registro por categoría, completando al azar hasta `n_muestra`."""
     # Use loop approach to handle pandas 3.0 groupby behavior
     muestra_list = []
+    original_indices = []
     for category, group in df_full.groupby('category'):
-        muestra_list.append(group.sample(1, random_state=semilla))
+        sampled = group.sample(1, random_state=semilla)
+        muestra_list.append(sampled)
+        # Track original df_full indices BEFORE concat resets them
+        original_indices.extend(sampled.index.tolist())
+
     muestra = pd.concat(muestra_list, ignore_index=True)
 
     if len(muestra) < n_muestra:
-        restantes = df_full[~df_full.index.isin(muestra.index)]
+        # Use original_indices (not muestra.index) to find untouched rows
+        restantes = df_full[~df_full.index.isin(original_indices)]
         extra = restantes.sample(n_muestra - len(muestra), random_state=semilla)
         muestra = pd.concat([muestra, extra], ignore_index=True)
 

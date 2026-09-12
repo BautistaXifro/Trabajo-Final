@@ -101,3 +101,16 @@ def test_cargar_o_generar_crea_el_archivo_si_no_existe(tmp_path):
     assert path.exists()
     assert 'instruction_es' in df.columns
     assert len(df) == 2
+
+
+def test_muestreo_estratificado_sin_duplicados():
+    """Verifica que no hay duplicados cuando se rellenan filas extra."""
+    # 3 categorías, 4 filas por categoría = 12 total
+    # Muestreo: 1 por categoría = 3, luego 4 extra para completar 7
+    df = _df_fake(n_categorias=3, filas_por_categoria=4)
+    muestra = corpus.muestreo_estratificado(df, n_muestra=7, semilla=42)
+
+    # Verificar que no hay duplicados por contenido (instruction debe ser único)
+    assert len(muestra) == 7
+    assert muestra['instruction'].nunique() == 7, \
+        f"Found duplicates: {muestra['instruction'].value_counts()}"
