@@ -48,3 +48,108 @@ def costo_oficial(fila):
     if fila.get('costo_usd') is not None:
         return fila['costo_usd']
     return fila['costo_instancia_usd']
+
+
+# --- Cliente unificado de modelos ---
+import os
+import time
+
+TEMPERATURA = 0.0
+MAX_TOKENS = 300
+
+MODELOS = {
+    'gpt-4o-mini':  {'proveedor': 'openai', 'id': 'gpt-4o-mini', 'tipo': 'propietario'},
+    'llama-3.1-8b': {'proveedor': 'ollama', 'id': 'llama3.1:8b', 'tipo': 'open-source'},
+    'mistral':      {'proveedor': 'ollama', 'id': 'mistral',     'tipo': 'open-source'},
+}
+
+PROMPT_SISTEMA = (
+    'Sos un agente de soporte al cliente. Respondé la consulta de forma clara, '
+    'concisa y profesional. No inventes datos que no tengas. '
+    'Respondé en el mismo idioma en que se te consulta.'
+)
+
+_clientes = {}
+
+
+def _cliente(proveedor):
+    """Devuelve (y cachea) el cliente del proveedor indicado."""
+    if proveedor not in _clientes:
+        if proveedor == 'openai':
+            from openai import OpenAI
+            _clientes[proveedor] = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+        elif proveedor == 'ollama':
+            import ollama
+            _clientes[proveedor] = ollama.Client(host='http://localhost:11434')
+        else:
+            raise ValueError(f'Proveedor desconocido: {proveedor}')
+    return _clientes[proveedor]
+
+
+def verificar_ollama():
+    """Lanza RuntimeError con mensaje claro si Ollama no está corriendo."""
+    import ollama
+    try:
+        ollama.Client(host='http://localhost:11434').list()
+    except Exception as e:
+        raise RuntimeError(
+            'Ollama no responde en localhost:11434. Iniciá el servicio con '
+            '`brew services start ollama` (o `ollama serve`) antes de continuar.'
+        ) from e
+
+
+def generar(modelo_key, consulta, contexto=None):
+    """Envía una consulta al modelo y devuelve respuesta + métricas operativas.
+
+    Devuelve dict con: respuesta, latencia_s, tokens_in, tokens_out, error.
+    contexto=None -> condición sin RAG. Este parámetro ya existe para que
+    agregar RAG en el Sub-proyecto 2 no obligue a cambiar la firma.
+    """
+    cfg = MODELOS[modelo_key]
+    cli = _cliente(cfg['proveedor'])
+
+    user_msg = consulta if contexto is None else (
+        f'Contexto relevante de la organización:\n{contexto}\n\n'
+        f'Consulta del cliente: {consulta}'
+    )
+    mensajes = [
+        {'role': 'system', 'content': PROMPT_SISTEMA},
+        {'role': 'user',   'content': user_msg},
+    ]
+
+    t0 = time.perf_counter()
+    try:
+        if cfg['proveedor'] == 'openai':
+            r = cli.chat.completions.create(
+                model=cfg['id'], messages=mensajes,
+                temperature=TEMPERATURA, max_tokens=MAX_TOKENS,
+            )
+            return {
+                'respuesta':  r.choices[0].message.content.strip(),
+                'latencia_s': round(time.perf_counter() - t0, 3),
+                'tokens_in':  r.usage.prompt_tokens,
+                'tokens_out': r.usage.completion_tokens,
+                'error':      None,
+            }
+        elif cfg['proveedor'] == 'ollama':
+            r = cli.chat(
+                model=cfg['id'], messages=mensajes,
+                options={'temperature': TEMPERATURA, 'num_predict': MAX_TOKENS},
+            )
+            return {
+                'respuesta':  r['message']['content'].strip(),
+                'latencia_s': round(r['total_duration'] / 1e9, 3),
+                'tokens_in':  r.get('prompt_eval_count', 0),
+                'tokens_out': r.get('eval_count', 0),
+                'error':      None,
+            }
+        else:
+            raise ValueError(f"Proveedor desconocido: {cfg['proveedor']}")
+    except Exception as e:
+        return {
+            'respuesta':  None,
+            'latencia_s': round(time.perf_counter() - t0, 3),
+            'tokens_in':  0,
+            'tokens_out': 0,
+            'error':      f'{type(e).__name__}: {e}',
+        }
