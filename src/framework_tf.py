@@ -45,8 +45,10 @@ def costo_consulta(fila):
 def costo_oficial(fila):
     """Costo usado para el contraste de H2/H3 y el índice compuesto: tarifa
     oficial para propietarios, costo de instancia amortizada para open-source."""
-    if fila.get('costo_usd') is not None:
-        return fila['costo_usd']
+    import pandas as pd
+    costo_usd = fila.get('costo_usd') if hasattr(fila, 'get') else fila['costo_usd']
+    if pd.notna(costo_usd):
+        return costo_usd
     return fila['costo_instancia_usd']
 
 
