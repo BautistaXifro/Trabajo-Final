@@ -125,15 +125,20 @@ resumen = df.groupby('modelo').agg(
     bertscore_f1=('bertscore_f1', 'mean'),
     latencia_s=('latencia_s', 'mean'),
     costo_oficial_usd=('costo_oficial_usd', 'mean'),
+    costo_electricidad_usd=('costo_electricidad_usd', 'mean'),
 )
-# Nota: no se redondea `resumen` aquí. costo_oficial_usd se muestra con 6
-# decimales (`:.6f`) más abajo; redondear a 4 decimales antes de formatear
-# con 6 mostraría precisión falsa sobre un valor ya truncado. Cada campo se
-# redondea únicamente al formatearse (":.4f", ":.2f", ":.6f").
+n_por_modelo = df.groupby('modelo').size()
+n_muestra = int(n_por_modelo.iloc[0])
+assert (n_por_modelo == n_muestra).all(), 'Cantidad de consultas por modelo distinta entre modelos'
+# Nota: no se redondea `resumen` aquí. costo_oficial_usd/costo_electricidad_usd
+# se muestran con 6 decimales (`:.6f`) más abajo; redondear a 4 decimales antes
+# de formatear con 6 mostraría precisión falsa sobre un valor ya truncado. Cada
+# campo se redondea únicamente al formatearse (":.4f", ":.2f", ":.6f").
 
 texto_resultados = (
-    'Los resultados del baseline sin RAG, calculados sobre la muestra estratificada '
-    'traducida al español, se presentan a continuación. GPT-4o mini alcanzó un '
+    f'Los resultados del baseline sin RAG, calculados sobre una muestra de '
+    f'{n_muestra} consultas por modelo (muestra estratificada traducida al '
+    'español), se presentan a continuación. GPT-4o mini alcanzó un '
     f"BERTScore F1 medio de {resumen.loc['gpt-4o-mini', 'bertscore_f1']:.4f}, con una "
     f"latencia media de {resumen.loc['gpt-4o-mini', 'latencia_s']:.2f} segundos y un "
     f"costo medio de USD {resumen.loc['gpt-4o-mini', 'costo_oficial_usd']:.6f} por "
@@ -141,13 +146,22 @@ texto_resultados = (
     f"F1 medio de {resumen.loc['llama-3.1-8b', 'bertscore_f1']:.4f}, con una latencia "
     f"media de {resumen.loc['llama-3.1-8b', 'latencia_s']:.2f} segundos y un costo de "
     f"instancia amortizada de USD {resumen.loc['llama-3.1-8b', 'costo_oficial_usd']:.6f} "
-    'por consulta. Mistral presentó un BERTScore F1 medio de '
+    'por consulta (frente a una cota inferior de USD '
+    f"{resumen.loc['llama-3.1-8b', 'costo_electricidad_usd']:.6f} por electricidad). "
+    'Mistral presentó un BERTScore F1 medio de '
     f"{resumen.loc['mistral', 'bertscore_f1']:.4f}, con una latencia media de "
     f"{resumen.loc['mistral', 'latencia_s']:.2f} segundos y un costo equivalente de "
-    f"USD {resumen.loc['mistral', 'costo_oficial_usd']:.6f} por consulta. Estos "
-    'resultados corresponden exclusivamente a la condición sin RAG, que opera como '
-    'línea base de control; la condición con RAG se incorpora en la siguiente etapa '
-    'de este trabajo.'
+    f"USD {resumen.loc['mistral', 'costo_oficial_usd']:.6f} por consulta (frente a una "
+    f"cota inferior de USD {resumen.loc['mistral', 'costo_electricidad_usd']:.6f} por "
+    'electricidad). Estos resultados corresponden exclusivamente a la condición sin '
+    'RAG, que opera como línea base de control; la condición con RAG se incorpora en '
+    'la siguiente etapa de este trabajo. Cabe aclarar que los parámetros de costo '
+    'utilizados para estas estimaciones (consumo eléctrico del hardware, tarifa '
+    'eléctrica y precio de instancia cloud) son valores provisionales, pendientes de '
+    'reemplazo por una cotización real y citada; en consecuencia, la magnitud '
+    'absoluta de las cifras en USD reportadas es provisoria, aunque la comparación '
+    'relativa entre modelos se mantiene válida al calcularse con los mismos '
+    'parámetros para los tres.'
 )
 
 insertar_despues(

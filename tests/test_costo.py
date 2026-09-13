@@ -1,4 +1,6 @@
 import sys, os
+import numpy as np
+import pandas as pd
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from src import framework_tf as ftf
 
@@ -40,3 +42,18 @@ def test_costo_oficial_selecciona_columna_correcta():
     fila_open_source = {'costo_usd': None, 'costo_instancia_usd': 0.0002}
     assert ftf.costo_oficial(fila_propietario) == 0.001
     assert ftf.costo_oficial(fila_open_source) == 0.0002
+
+
+def test_costo_oficial_con_nan_de_pandas_apply():
+    """Regresión: a diferencia de un dict hecho a mano con `None`,
+    `pandas.DataFrame.apply(axis=1)` produce filas (`pandas.Series`) donde una
+    columna faltante/no aplicable queda como `numpy.nan` (float), no como
+    `None`. `is not None` no detecta ese NaN y devolvería el propio NaN en vez
+    de caer a `costo_instancia_usd` (bug real encontrado durante la
+    integración del Task 6, corregido con `pd.notna()`). Este test falla si
+    `costo_oficial()` vuelve a usar `is not None` en lugar de `pd.notna()`."""
+    df = pd.DataFrame([
+        {'costo_usd': np.nan, 'costo_instancia_usd': 0.0013},
+    ])
+    resultado = df.apply(ftf.costo_oficial, axis=1)
+    assert resultado.iloc[0] == 0.0013

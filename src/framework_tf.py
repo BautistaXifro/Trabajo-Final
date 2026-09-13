@@ -58,6 +58,7 @@ import time
 
 TEMPERATURA = 0.0
 MAX_TOKENS = 300
+SEMILLA_GENERACION = 42
 
 MODELOS = {
     'gpt-4o-mini':  {'proveedor': 'openai', 'id': 'gpt-4o-mini', 'tipo': 'propietario'},
@@ -125,6 +126,7 @@ def generar(modelo_key, consulta, contexto=None):
             r = cli.chat.completions.create(
                 model=cfg['id'], messages=mensajes,
                 temperature=TEMPERATURA, max_tokens=MAX_TOKENS,
+                seed=SEMILLA_GENERACION,
             )
             return {
                 'respuesta':  r.choices[0].message.content.strip(),
@@ -136,7 +138,11 @@ def generar(modelo_key, consulta, contexto=None):
         elif cfg['proveedor'] == 'ollama':
             r = cli.chat(
                 model=cfg['id'], messages=mensajes,
-                options={'temperature': TEMPERATURA, 'num_predict': MAX_TOKENS},
+                options={
+                    'temperature': TEMPERATURA,
+                    'num_predict': MAX_TOKENS,
+                    'seed': SEMILLA_GENERACION,
+                },
             )
             return {
                 'respuesta':  r['message']['content'].strip(),
