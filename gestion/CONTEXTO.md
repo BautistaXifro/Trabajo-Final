@@ -4,6 +4,52 @@ Documento de handoff para retomar el trabajo desde cualquier sesión.
 
 ---
 
+## 0. Estado actual (actualizado 2026-09-13)
+
+**Sub-proyecto 1 "Fundamentos" — COMPLETO.** Se resolvieron acá los dos puntos
+más débiles que dejaba `01_celda_experimental_minima.ipynb` (ver §5.1/§5.2,
+ahora históricas). Resumen de lo que hay en la carpeta a partir de este punto:
+
+- **Entorno real:** Ollama local (`llama3.1:8b`, `mistral`) + venv Python 3.11
+  (`venv/`, no versionado) + `.env` con clave **personal** de OpenAI (no
+  corporativa — deliberado, ver más abajo).
+- **Código:** `src/framework_tf.py` (cliente unificado OpenAI/Ollama + modelo
+  de costo dual) y `src/corpus.py` (muestreo estratificado + traducción),
+  ambos con tests (`tests/`, 16/16 en verde).
+- **Corpus en español:** `data/corpus_es_muestra.csv` (20 filas, persistido —
+  no se retraduce en cada corrida).
+- **Notebook real ejecutado:** `notebooks/02_fundamentos.ipynb` (generado
+  reproduciblemente por `scripts/crear_notebook_fundamentos.py`) — corrida
+  real de 3 modelos × 20 consultas = 60 filas, **0 errores**:
+  `resultados_fundamentos_20260913_1422.csv`.
+- **Documentación de resultados:** `HALLAZGOS.md` (crudo, con el hallazgo
+  principal: BERTScore F1 casi empatado entre los 3 modelos, 0.7103–0.7154 →
+  el índice compuesto queda dominado por costo y latencia) y
+  `TF_Juan_Bautista_Xifro_2026_v4.docx` (secciones 3.4, Cap. 4, Cap. 5 y
+  Cap. 6-parcial redactadas en APA 7 con estos datos reales — v3 y v4 son
+  versiones intermedias, v4 es la vigente).
+- **Repo git local** (`git init`, sin remoto) creado solo para trackear este
+  trabajo tarea por tarea. Nadie lo empujó a ningún lado.
+- Plan y spec completos en `docs/superpowers/plans/2026-09-12-fundamentos-tf-plan.md`
+  y `docs/superpowers/specs/2026-09-12-fundamentos-tf.md`, por si hace falta
+  ver el detalle de una decisión.
+
+**Pendiente real, no bloqueante, a tener en cuenta en el próximo sub-proyecto:**
+- Los 3 parámetros de costo (`CONSUMO_W`, `PRECIO_KWH_USD`,
+  `PRECIO_INSTANCIA_HORA` en `src/framework_tf.py`) siguen siendo
+  placeholders — están declarados como provisionales tanto en el código como
+  en `HALLAZGOS.md` y en el texto insertado en el docx, pero antes de la
+  corrida definitiva hay que reemplazarlos por valores reales y citados.
+- `requirements.txt` no incluye `groq` (ya no se usa) pero sí `nbformat`/`nbconvert`.
+- Quedaron un puñado de hallazgos "Minor" parkeados sin resolver (no afectan
+  nada del pipeline actual) — están documentados en el historial de commits
+  de este sub-proyecto si hace falta revisarlos.
+
+**Siguiente paso: Sub-proyecto 2 — RAG** (FAISS + LangChain, integrado vía el
+parámetro `contexto` que `generar()` ya acepta desde el día 1).
+
+---
+
 ## 1. El trabajo académico
 
 **Título:** Evaluación de Modelos de Lenguaje de Gran Escala (LLMs) para Soporte al Cliente Automatizado: Un Framework basado en Big Data
@@ -109,6 +155,12 @@ No hay que reescribir nada en ninguno de los dos casos.
 ---
 
 ## 5. PENDIENTE — Lo que falta resolver
+
+> **Nota (2026-09-13):** los puntos 5.1 y 5.2 de abajo quedaron resueltos en
+> el Sub-proyecto 1 (ver §0). Se dejan como registro histórico de la
+> discusión que llevó a esas decisiones — el detalle de implementación real
+> está en `src/framework_tf.py`, `src/corpus.py` y `HALLAZGOS.md`, no en esta
+> sección.
 
 ### 5.1 CRÍTICO: el modelo de costo
 
@@ -225,11 +277,11 @@ OPENAI_API_KEY=...
 
 ## 8. Orden sugerido para avanzar
 
-1. Correr el notebook tal cual y verificar que la cadena funciona
-2. Resolver el modelo de costo (Ollama local)
-3. Decidir el idioma del corpus
-4. Extender a los 3 modelos sin RAG
-5. Implementar RAG y correr las 6 configuraciones
-6. Escalar la muestra
+1. ~~Correr el notebook tal cual y verificar que la cadena funciona~~ ✅
+2. ~~Resolver el modelo de costo (Ollama local)~~ ✅
+3. ~~Decidir el idioma del corpus~~ ✅
+4. ~~Extender a los 3 modelos sin RAG~~ ✅ (Sub-proyecto 1, completo — ver §0)
+5. **Implementar RAG y correr las configuraciones con RAG** ← siguiente paso
+6. Escalar la muestra (300-500 consultas)
 7. Pruebas estadísticas
 8. Dashboard

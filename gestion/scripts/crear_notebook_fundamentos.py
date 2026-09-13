@@ -1,7 +1,17 @@
-"""Genera notebooks/02_fundamentos.ipynb con nbformat, de forma reproducible."""
+"""Genera proyecto/notebooks/02_fundamentos.ipynb con nbformat, de forma reproducible.
+
+Este script vive en gestion/ (herramienta interna) pero su salida es parte
+del entregable en proyecto/ — se puede correr desde cualquier directorio,
+la ruta de salida se calcula relativa a la ubicación de este archivo, no al
+directorio de trabajo actual.
+"""
 
 import os
 import nbformat as nbf
+
+_AQUI = os.path.dirname(os.path.abspath(__file__))
+_PROYECTO = os.path.normpath(os.path.join(_AQUI, '..', '..', 'proyecto'))
+_NOTEBOOKS_DIR = os.path.join(_PROYECTO, 'notebooks')
 
 nb = nbf.v4.new_notebook()
 celdas = []
@@ -122,7 +132,8 @@ celdas.append(nbf.v4.new_code_cell(
 ))
 
 nb['cells'] = celdas
-os.makedirs('notebooks', exist_ok=True)
-with open('notebooks/02_fundamentos.ipynb', 'w') as f:
+os.makedirs(_NOTEBOOKS_DIR, exist_ok=True)
+_destino = os.path.join(_NOTEBOOKS_DIR, '02_fundamentos.ipynb')
+with open(_destino, 'w') as f:
     nbf.write(nb, f)
-print('Notebook creado: notebooks/02_fundamentos.ipynb')
+print(f'Notebook creado: {_destino}')
