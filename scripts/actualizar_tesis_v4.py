@@ -125,7 +125,11 @@ resumen = df.groupby('modelo').agg(
     bertscore_f1=('bertscore_f1', 'mean'),
     latencia_s=('latencia_s', 'mean'),
     costo_oficial_usd=('costo_oficial_usd', 'mean'),
-).round(4)
+)
+# Nota: no se redondea `resumen` aquí. costo_oficial_usd se muestra con 6
+# decimales (`:.6f`) más abajo; redondear a 4 decimales antes de formatear
+# con 6 mostraría precisión falsa sobre un valor ya truncado. Cada campo se
+# redondea únicamente al formatearse (":.4f", ":.2f", ":.6f").
 
 texto_resultados = (
     'Los resultados del baseline sin RAG, calculados sobre la muestra estratificada '
