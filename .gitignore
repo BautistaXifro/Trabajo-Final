@@ -1,16 +1,37 @@
-# Entorno
-venv/
-.env
+# Credenciales y configuracion local
+proyecto/.env
+proyecto/.env.*
+!proyecto/.env.example
 
-# Python
-__pycache__/
-*.pyc
-.ipynb_checkpoints/
+# Entornos virtuales (se recrean desde requirements.txt)
+proyecto/venv/
+proyecto/.venv/
 
-# Artefactos temporales de scripts de edición del .docx
+# Python, tests y notebooks
+**/__pycache__/
+*.py[cod]
+*.pyd
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.ipynb_checkpoints/
+.coverage
+htmlcov/
+
+# Metadatos locales de herramientas
+.claude/
+.superpowers/
+
+# IDE y sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporales y registros
 _tmp_tf/
 _tmp_tf_v4/
-
-# macOS
-.DS_Store
-.claude/
+*.log
+*.tmp
+~$*
