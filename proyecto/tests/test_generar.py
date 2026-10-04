@@ -105,3 +105,9 @@ def test_generar_con_rag_incluye_reglas_contexto_y_consulta(monkeypatch):
     assert ftf.INSTRUCCION_RAG in mensaje
     assert 'Aceptamos tarjeta.' in mensaje
     assert '¿Cómo pago?' in mensaje
+
+
+def test_limpiar_respuesta_quita_espacios_finales_por_linea():
+    assert ftf._limpiar_respuesta('  primera  \nsegunda   \n') == (
+        'primera\nsegunda'
+    )

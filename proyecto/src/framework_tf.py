@@ -81,6 +81,11 @@ INSTRUCCION_RAG = (
 _clientes = {}
 
 
+def _limpiar_respuesta(texto):
+    """Normaliza espacios finales por línea sin cambiar el contenido."""
+    return '\n'.join(linea.rstrip() for linea in texto.splitlines()).strip()
+
+
 def _cliente(proveedor):
     """Devuelve (y cachea) el cliente del proveedor indicado."""
     if proveedor not in _clientes:
@@ -137,7 +142,7 @@ def generar(modelo_key, consulta, contexto=None):
                 seed=SEMILLA_GENERACION,
             )
             return {
-                'respuesta':  r.choices[0].message.content.strip(),
+                'respuesta':  _limpiar_respuesta(r.choices[0].message.content),
                 'latencia_s': round(time.perf_counter() - t0, 3),
                 'tokens_in':  r.usage.prompt_tokens,
                 'tokens_out': r.usage.completion_tokens,
@@ -153,7 +158,7 @@ def generar(modelo_key, consulta, contexto=None):
                 },
             )
             return {
-                'respuesta':  r['message']['content'].strip(),
+                'respuesta':  _limpiar_respuesta(r['message']['content']),
                 'latencia_s': round(r['total_duration'] / 1e9, 3),
                 'tokens_in':  r.get('prompt_eval_count', 0),
                 'tokens_out': r.get('eval_count', 0),

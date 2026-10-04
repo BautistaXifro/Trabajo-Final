@@ -7,7 +7,7 @@ El corpus proviene de [Bitext Customer Support LLM Chatbot Training Dataset](htt
 ## Contenido
 
 - `src/`: corpus, clientes de OpenAI/Ollama, costos y recuperación RAG.
-- `tests/`: 26 pruebas unitarias sin llamadas reales a APIs.
+- `tests/`: 27 pruebas unitarias sin llamadas reales a APIs.
 - `notebooks/02_fundamentos.ipynb`: experimento reproducible del baseline sin RAG.
 - `notebooks/03_rag_piloto.ipynb`: piloto RAG; la generación está desactivada por defecto.
 - `data/corpus_es_muestra.csv`: muestra traducida para evitar repetir costo y tiempo.
@@ -19,6 +19,10 @@ El corpus proviene de [Bitext Customer Support LLM Chatbot Training Dataset](htt
 - `resultados_recuperacion_rag_en.csv`: validación inicial español→inglés del recuperador.
 - `resultados_recuperacion_rag_es.csv`: validación con consultas y conocimiento en español.
 - `resultados_smoke_rag_local.json`: cuatro generaciones RAG de control con los modelos locales.
+- `resultados_rag_piloto.csv`: 60 respuestas RAG crudas con checkpoint por consulta.
+- `resultados_rag_piloto_evaluados.csv`: respuestas RAG con calidad, costos e índice compuesto.
+- `resumen_rag_piloto.csv`: resumen por modelo.
+- `comparacion_baseline_rag.csv`: diferencias exploratorias frente al baseline original.
 - `TF_Juan_Bautista_Xifro_2026.docx`: única versión vigente de la tesis.
 - `requirements.txt`: dependencias Python reproducibles.
 - `requirements-lock.txt`: versiones exactas verificadas en Windows.
@@ -75,7 +79,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\iniciar_ollama.ps1
 .\.ollama-bin\ollama.exe list
 ```
 
-El resultado esperado es `26 passed`. Antes de ejecutar el experimento generativo, Ollama debe estar activo en `http://localhost:11434`.
+El resultado esperado es `27 passed`. Antes de ejecutar el experimento generativo, Ollama debe estar activo en `http://localhost:11434`.
 
 ## Preparar y validar RAG
 
@@ -90,6 +94,10 @@ Desde `proyecto/`:
 
 # Smoke test sin costo de API: dos consultas en LLaMA y Mistral.
 .\venv\Scripts\python.exe .\scripts\smoke_rag_local.py
+
+# Piloto completo con checkpoint y evaluación posterior.
+.\venv\Scripts\python.exe .\scripts\ejecutar_rag_piloto.py
+.\venv\Scripts\python.exe .\scripts\evaluar_rag_piloto.py
 ```
 
 El recuperador usa [`paraphrase-multilingual-MiniLM-L12-v2`](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2). La primera validación cruzada español→inglés obtuvo `Hit@1 = 80 %`, `Hit@3 = 90 %` y una latencia media de `14,40 ms`. El modelo se descarga la primera vez y queda en una caché local ignorada por Git.
@@ -105,6 +113,20 @@ Ese comando usa GPT-4o mini solamente si existen filas pendientes. Guarda cada a
 ### Decisión de idioma del conocimiento
 
 La traducción no mejoró la recuperación: obtuvo `Hit@1 = 70 %` y `Hit@3 = 85 %`, con `14,56 ms` de latencia media. También se probó exploratoriamente `multilingual-e5-small` con los prefijos de recuperación recomendados por su documentación; su mejor variante alcanzó `70 % / 85 %`. Por eso el piloto generativo fija como condición principal MiniLM con el conocimiento original en inglés. La variante española se conserva como análisis de sensibilidad y esta decisión deberá confirmarse con la muestra ampliada.
+
+## Resultado del piloto RAG
+
+Las 60 generaciones finalizaron sin errores. Promedios:
+
+| Modelo | BERTScore F1 | ROUGE-L | Latencia total | Cambio BERTScore vs. baseline |
+|---|---:|---:|---:|---:|
+| GPT-4o mini | 0,7526 | 0,3054 | 1,591 s | +0,0406 |
+| LLaMA 3.1 8B | 0,7213 | 0,2224 | 1,496 s | +0,0059 |
+| Mistral | 0,7333 | 0,2770 | 1,867 s | +0,0230 |
+
+GPT-4o mini consumió USD 0,002958 en total. Los costos locales publicados por el código continúan siendo provisionales porque dependen de una tarifa de instancia pendiente de reemplazar por una fuente real.
+
+La comparación de latencia contra el baseline original **no es causalmente válida todavía**: el piloto RAG precalentó LLaMA y Mistral, mientras que la primera corrida sin RAG incluyó cargas frías. Se necesita repetir el baseline con el mismo protocolo y en condiciones temporales comparables.
 
 ## Ejecutar el notebook
 
