@@ -8,6 +8,7 @@ proyecto/venv/
 proyecto/.venv/
 proyecto/.python/
 proyecto/.ollama-bin/
+proyecto/.cache/
 
 # Python, tests y notebooks
 **/__pycache__/

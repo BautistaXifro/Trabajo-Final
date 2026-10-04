@@ -33,6 +33,17 @@ class _FakeOpenAIClient:
                 return _FakeOpenAIResponse(' Hola, ¿en qué puedo ayudarte? ', 12, 8)
 
 
+class _FakeOpenAIClientCaptura:
+    mensajes = None
+
+    class chat:
+        class completions:
+            @staticmethod
+            def create(**kwargs):
+                _FakeOpenAIClientCaptura.mensajes = kwargs["messages"]
+                return _FakeOpenAIResponse("Respuesta", 20, 5)
+
+
 class _FakeOllamaClient:
     def chat(self, **kwargs):
         return {
@@ -83,3 +94,14 @@ def test_generar_captura_error_del_proveedor(monkeypatch):
     assert out['error'] is not None
     assert 'timeout simulado' in out['error']
     assert out['respuesta'] is None
+
+
+def test_generar_con_rag_incluye_reglas_contexto_y_consulta(monkeypatch):
+    monkeypatch.setitem(ftf._clientes, 'openai', _FakeOpenAIClientCaptura())
+    out = ftf.generar('gpt-4o-mini', '¿Cómo pago?', contexto='Aceptamos tarjeta.')
+
+    assert out['error'] is None
+    mensaje = _FakeOpenAIClientCaptura.mensajes[-1]['content']
+    assert ftf.INSTRUCCION_RAG in mensaje
+    assert 'Aceptamos tarjeta.' in mensaje
+    assert '¿Cómo pago?' in mensaje

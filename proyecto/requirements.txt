@@ -15,6 +15,9 @@ datasets>=2.20.0
 numpy>=1.26.0
 pandas>=2.0.0
 
+# --- Recuperación aumentada (Subproyecto 2) ---
+sentence-transformers>=6.1.0,<7.0.0
+
 # --- Métricas de evaluación ---
 bert-score>=0.3.13
 rouge-score>=0.1.2

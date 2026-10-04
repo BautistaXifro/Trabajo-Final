@@ -107,6 +107,7 @@ httpx2==2.13.1
 huggingface-hub==1.33.0
     # via
     #   datasets
+    #   sentence-transformers
     #   tokenizers
     #   transformers
 idna==3.20
@@ -133,7 +134,9 @@ jinja2==3.1.6
 jiter==0.17.0
     # via openai
 joblib==1.6.0
-    # via nltk
+    # via
+    #   nltk
+    #   scikit-learn
 jsonschema==4.26.0
     # via nbformat
 jsonschema-specifications==2025.9.1
@@ -177,6 +180,8 @@ multidict==6.9.1
     #   yarl
 multiprocess==0.70.19
     # via datasets
+narwhals==2.26.0
+    # via scikit-learn
 nbclient==0.11.0
     # via nbconvert
 nbconvert==7.17.1
@@ -201,6 +206,9 @@ numpy==2.4.6
     #   matplotlib
     #   pandas
     #   rouge-score
+    #   scikit-learn
+    #   scipy
+    #   sentence-transformers
     #   transformers
 ollama==0.6.3
     # via -r ./requirements.txt
@@ -298,6 +306,14 @@ rpds-py==2026.9.1
     #   referencing
 safetensors==0.8.0
     # via transformers
+scikit-learn==1.9.1
+    # via sentence-transformers
+scipy==1.17.1
+    # via
+    #   scikit-learn
+    #   sentence-transformers
+sentence-transformers==6.1.0
+    # via -r ./requirements.txt
 setuptools==84.0.0
     # via torch
 shellingham==1.5.4
@@ -314,12 +330,18 @@ stack-data==0.6.3
     # via ipython
 sympy==1.14.0
     # via torch
+threadpoolctl==3.7.0
+    # via scikit-learn
 tinycss2==1.5.1
     # via bleach
 tokenizers==0.23.2
-    # via transformers
+    # via
+    #   sentence-transformers
+    #   transformers
 torch==2.14.1
-    # via bert-score
+    # via
+    #   bert-score
+    #   sentence-transformers
 tornado==6.5.10
     # via
     #   ipykernel
@@ -331,6 +353,7 @@ tqdm==4.70.1
     #   datasets
     #   huggingface-hub
     #   nltk
+    #   sentence-transformers
     #   transformers
 traitlets==5.16.1
     # via
@@ -343,7 +366,9 @@ traitlets==5.16.1
     #   nbconvert
     #   nbformat
 transformers==5.18.0
-    # via bert-score
+    # via
+    #   bert-score
+    #   sentence-transformers
 truststore==0.10.4
     # via
     #   httpcore2
@@ -364,6 +389,7 @@ typing-extensions==4.16.0
     #   pydantic
     #   pydantic-core
     #   referencing
+    #   sentence-transformers
     #   torch
     #   typing-inspection
 typing-inspection==0.4.4

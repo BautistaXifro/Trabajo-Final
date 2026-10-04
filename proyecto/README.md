@@ -1,16 +1,20 @@
 # Evaluación de LLMs para soporte al cliente
 
-Primera iteración del Trabajo Final de Juan Bautista Xifro (UAI, 2026). Compara GPT-4o mini, LLaMA 3.1 8B y Mistral sobre consultas de atención al cliente, midiendo calidad, latencia y costo.
+Trabajo Final de Juan Bautista Xifro (UAI, 2026). Compara GPT-4o mini, LLaMA 3.1 8B y Mistral sobre consultas de atención al cliente, midiendo calidad, latencia y costo en dos condiciones: baseline sin RAG y recuperación aumentada (RAG).
 
 El corpus proviene de [Bitext Customer Support LLM Chatbot Training Dataset](https://huggingface.co/datasets/bitext/Bitext-customer-support-llm-chatbot-training-dataset). La muestra persistida en `data/` contiene 20 consultas traducidas al español.
 
 ## Contenido
 
-- `src/`: carga y traducción del corpus, clientes de OpenAI/Ollama y cálculo de costos.
-- `tests/`: 16 pruebas unitarias sin llamadas reales a APIs.
+- `src/`: corpus, clientes de OpenAI/Ollama, costos y recuperación RAG.
+- `tests/`: 24 pruebas unitarias sin llamadas reales a APIs.
 - `notebooks/02_fundamentos.ipynb`: experimento reproducible del baseline sin RAG.
+- `notebooks/03_rag_piloto.ipynb`: piloto RAG; la generación está desactivada por defecto.
 - `data/corpus_es_muestra.csv`: muestra traducida para evitar repetir costo y tiempo.
+- `data/conocimiento_rag.csv`: 81 documentos Bitext, tres por intención, sin solapamientos directos con la evaluación.
+- `data/conocimiento_rag_auditoria.json`: trazabilidad de duplicados y fugas excluidas.
 - `resultados_fundamentos_20260913_1422.csv`: resultados de la primera corrida.
+- `resultados_recuperacion_rag_en.csv`: validación inicial español→inglés del recuperador.
 - `TF_Juan_Bautista_Xifro_2026.docx`: única versión vigente de la tesis.
 - `requirements.txt`: dependencias Python reproducibles.
 - `requirements-lock.txt`: versiones exactas verificadas en Windows.
@@ -67,7 +71,29 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\iniciar_ollama.ps1
 .\.ollama-bin\ollama.exe list
 ```
 
-El resultado esperado es `16 passed`. Antes de ejecutar el experimento, Ollama debe estar activo en `http://localhost:11434`.
+El resultado esperado es `24 passed`. Antes de ejecutar el experimento generativo, Ollama debe estar activo en `http://localhost:11434`.
+
+## Preparar y validar RAG
+
+Desde `proyecto/`:
+
+```powershell
+# Reconstruye los 81 documentos desde Bitext. No usa una API generativa.
+.\venv\Scripts\python.exe .\scripts\construir_corpus_rag.py
+
+# Valida Hit@1, Hit@3 y latencia sin generar respuestas.
+.\venv\Scripts\python.exe .\scripts\validar_recuperacion_rag.py
+```
+
+La primera validación cruzada español→inglés obtuvo `Hit@1 = 80 %`, `Hit@3 = 90 %` y una latencia media de recuperación de `14,40 ms`. El modelo de embeddings se descarga la primera vez y queda en una caché local ignorada por Git.
+
+La traducción controlada del conocimiento se realiza por separado:
+
+```powershell
+.\venv\Scripts\python.exe .\scripts\traducir_corpus_rag.py
+```
+
+Ese comando sí usa GPT-4o mini y tiene costo de API. Guarda cada avance en `data/conocimiento_rag_es.csv`, por lo que puede reanudarse después de una interrupción sin repetir documentos ya traducidos.
 
 ## Ejecutar el notebook
 
@@ -86,6 +112,8 @@ Set-Location ..
 ```
 
 La ejecución completa realiza llamadas pagas a OpenAI y usa los modelos locales de Ollama. El corpus ya traducido evita repetir la traducción mientras `data/corpus_es_muestra.csv` exista.
+
+Para el Subproyecto 2, abrir `notebooks/03_rag_piloto.ipynb`. Sus celdas de carga y recuperación son seguras; para habilitar las 60 generaciones (20 consultas × 3 modelos) se debe cambiar explícitamente `EJECUTAR_EXPERIMENTO = False` a `True`.
 
 ## Portabilidad
 
