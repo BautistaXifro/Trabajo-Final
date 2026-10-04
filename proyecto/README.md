@@ -145,7 +145,9 @@ Se repitió el baseline con el mismo calentamiento y en la misma sesión de trab
 
 RAG aumentó la latencia local un 23,3 % en LLaMA y un 38,3 % en Mistral. La API de GPT fue un 7,6 % más rápida con RAG en esta corrida, pese a recibir 9,35 veces más tokens de entrada; esto se interpreta como variabilidad del servicio remoto, no como una aceleración causada por RAG.
 
-El costo real de las 20 respuestas de GPT pasó de USD 0,001333 sin RAG a USD 0,002958 con RAG. Los costos de los modelos locales siguen siendo provisionales porque dependen del supuesto pendiente de USD 0,75 por hora de instancia.
+El costo real de las 20 respuestas de GPT pasó de USD 0,001333 sin RAG a USD 0,002958 con RAG. Para los modelos locales, la comparación principal amortiza una instancia Lambda Cloud con NVIDIA Quadro RTX 6000 de 24 GB publicada a USD 0,69 por GPU-hora. Como sensibilidad se calcula una cota superior eléctrica de 415 W (350 W de la RTX 3080 Ti más 65 W del Ryzen 5 5600X) con un benchmark comercial de USD 0,1453/kWh. Esta última cifra no representa una tarifa argentina ni un consumo medido en pared.
+
+Fuentes de los parámetros, consultadas el 4 de octubre de 2026: [precios de GPT-4o mini](https://developers.openai.com/api/docs/models/gpt-4o-mini), [instancias de Lambda Cloud](https://lambda.ai/instances), [especificaciones de la RTX 3080 Ti](https://www.nvidia.com/en-us/geforce/graphics-cards/30-series/rtx-3080-3080ti/), [especificaciones del Ryzen 5 5600X](https://www.amd.com/en/products/processors/desktops/ryzen/5000-series/amd-ryzen-5-5600x.html) y [precio comercial de electricidad de la EIA](https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_6_a).
 
 ## Ejecutar el notebook
 

@@ -5,12 +5,22 @@ PRECIOS_API = {
     'gpt-4o-mini': {'in': 0.150, 'out': 0.600},  # USD por 1M tokens
 }
 
-# --- Modelo de costo: open-source, columna de sensibilidad (electricidad real) ---
-CONSUMO_W = 20          # TDP aprox. Apple M3 bajo carga (fuente: specs Apple — citar fecha real al usar)
-PRECIO_KWH_USD = 0.15   # tarifa eléctrica a citar con fuente y fecha real
+# --- Modelo de costo: open-source, columna de sensibilidad eléctrica ---
+# Cota superior de potencia del equipo experimental: RTX 3080 Ti (350 W) +
+# Ryzen 5 5600X (65 W). No es una medición de pared y por eso se informa como
+# escenario conservador. Fuentes NVIDIA y AMD consultadas el 04-10-2026.
+CONSUMO_W = 415
+
+# Benchmark tarifario reproducible: precio comercial medio de electricidad en
+# EE. UU. en julio de 2026, 14,53 centavos de USD/kWh (EIA). No representa la
+# tarifa domiciliaria argentina del equipo experimental.
+PRECIO_KWH_USD = 0.1453
 
 # --- Modelo de costo: open-source, columna oficial (instancia cloud amortizada) ---
-PRECIO_INSTANCIA_HORA = 0.75  # cotización cloud a reemplazar por una real, citada
+# Lambda Cloud, NVIDIA Quadro RTX 6000 de 24 GB, USD 0,69/GPU-hora, consultado
+# el 04-10-2026. Es la instancia publicada de menor precio con memoria
+# suficiente para servir holgadamente los modelos cuantizados evaluados.
+PRECIO_INSTANCIA_HORA = 0.69
 
 
 def costo_electricidad(latencia_s):

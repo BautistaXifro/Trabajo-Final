@@ -5,18 +5,18 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from src import framework_tf as ftf
 
 
-def test_costo_electricidad_formula():
-    ftf.CONSUMO_W = 20
-    ftf.PRECIO_KWH_USD = 0.15
+def test_costo_electricidad_formula(monkeypatch):
+    monkeypatch.setattr(ftf, 'CONSUMO_W', 415)
+    monkeypatch.setattr(ftf, 'PRECIO_KWH_USD', 0.1453)
     costo = ftf.costo_electricidad(latencia_s=3600)  # 1 hora exacta
-    esperado = (20 / 1000) * (3600 / 3600) * 0.15
+    esperado = (415 / 1000) * (3600 / 3600) * 0.1453
     assert round(costo, 8) == round(esperado, 8)
 
 
-def test_costo_instancia_formula():
-    ftf.PRECIO_INSTANCIA_HORA = 0.75
+def test_costo_instancia_formula(monkeypatch):
+    monkeypatch.setattr(ftf, 'PRECIO_INSTANCIA_HORA', 0.69)
     costo = ftf.costo_instancia(latencia_s=1.0)  # 3600 consultas/hora
-    esperado = 0.75 / 3600
+    esperado = 0.69 / 3600
     assert round(costo, 8) == round(esperado, 8)
 
 
