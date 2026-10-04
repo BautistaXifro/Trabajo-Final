@@ -6,6 +6,8 @@ proyecto/.env.*
 # Entornos virtuales (se recrean desde requirements.txt)
 proyecto/venv/
 proyecto/.venv/
+proyecto/.python/
+proyecto/.ollama-bin/
 
 # Python, tests y notebooks
 **/__pycache__/

@@ -97,7 +97,8 @@ def verificar_ollama():
     except Exception as e:
         raise RuntimeError(
             'Ollama no responde en localhost:11434. Iniciá el servicio con '
-            '`brew services start ollama` (o `ollama serve`) antes de continuar.'
+            '`scripts\\iniciar_ollama.ps1` en Windows o con `ollama serve` '
+            'antes de continuar.'
         ) from e
 
 

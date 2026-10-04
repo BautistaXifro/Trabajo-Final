@@ -12,6 +12,7 @@ ollama>=0.3.0
 
 # --- Datos ---
 datasets>=2.20.0
+numpy>=1.26.0
 pandas>=2.0.0
 
 # --- Métricas de evaluación ---

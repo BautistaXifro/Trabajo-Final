@@ -13,6 +13,8 @@ El corpus proviene de [Bitext Customer Support LLM Chatbot Training Dataset](htt
 - `resultados_fundamentos_20260913_1422.csv`: resultados de la primera corrida.
 - `TF_Juan_Bautista_Xifro_2026.docx`: única versión vigente de la tesis.
 - `requirements.txt`: dependencias Python reproducibles.
+- `requirements-lock.txt`: versiones exactas verificadas en Windows.
+- `.python-version`: versión de Python usada por el proyecto.
 
 ## Requisitos
 
@@ -37,13 +39,32 @@ ollama pull mistral
 Copy-Item .env.example .env
 ```
 
+Si una política de Windows impide instalar Python globalmente, puede utilizarse
+[uv](https://docs.astral.sh/uv/). El proyecto fija Python 3.11.17:
+
+```powershell
+uv venv --python 3.11.17 venv
+uv pip install --python .\venv\Scripts\python.exe -r requirements-lock.txt
+```
+
+El archivo `requirements.txt` declara las dependencias directas y permite
+actualizarlas. `requirements-lock.txt` conserva las versiones exactas del entorno
+validado y es la opción recomendada para reproducir una corrida.
+
 Luego editar `.env` y reemplazar el valor de ejemplo por una clave válida. `.env` y `venv/` son locales y Git los ignora.
+
+Para iniciar Ollama en Windows, tanto con una instalación global como con la
+distribución portable local, ejecutar:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\iniciar_ollama.ps1
+```
 
 ## Verificación
 
 ```powershell
 .\venv\Scripts\python.exe -m pytest tests -v
-ollama list
+.\.ollama-bin\ollama.exe list
 ```
 
 El resultado esperado es `16 passed`. Antes de ejecutar el experimento, Ollama debe estar activo en `http://localhost:11434`.
@@ -53,7 +74,7 @@ El resultado esperado es `16 passed`. Antes de ejecutar el experimento, Ollama d
 En VS Code:
 
 1. Abrir `notebooks/02_fundamentos.ipynb`.
-2. Seleccionar como kernel `proyecto\venv\Scripts\python.exe`.
+2. Seleccionar el kernel `Python 3.11 (Trabajo Final)` o `proyecto\venv\Scripts\python.exe`.
 3. Ejecutar las celdas en orden.
 
 También se puede ejecutar completo desde PowerShell:
