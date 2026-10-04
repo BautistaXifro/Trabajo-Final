@@ -14,8 +14,6 @@ El corpus proviene de [Bitext Customer Support LLM Chatbot Training Dataset](htt
 - `TF_Juan_Bautista_Xifro_2026.docx`: única versión vigente de la tesis.
 - `requirements.txt`: dependencias Python reproducibles.
 
-El contexto de desarrollo, planes, hallazgos, presentación y referencias están en `../gestion/`.
-
 ## Requisitos
 
 - Windows 10/11.

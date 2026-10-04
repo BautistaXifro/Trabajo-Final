@@ -22,6 +22,9 @@ htmlcov/
 .claude/
 .superpowers/
 
+# Material local de gestión y contexto de desarrollo
+gestion/
+
 # IDE y sistema operativo
 .vscode/
 .idea/
