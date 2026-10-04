@@ -23,6 +23,9 @@ El corpus proviene de [Bitext Customer Support LLM Chatbot Training Dataset](htt
 - `resultados_rag_piloto_evaluados.csv`: respuestas RAG con calidad, costos e índice compuesto.
 - `resumen_rag_piloto.csv`: resumen por modelo.
 - `comparacion_baseline_rag.csv`: diferencias exploratorias frente al baseline original.
+- `resultados_baseline_controlado_evaluados.csv`: nueva corrida sin RAG con warm-up.
+- `comparacion_controlada_rag.csv`: comparación principal bajo el mismo protocolo.
+- `conteos_comparacion_controlada.csv`: cantidad de consultas que mejoran o empeoran.
 - `TF_Juan_Bautista_Xifro_2026.docx`: única versión vigente de la tesis.
 - `requirements.txt`: dependencias Python reproducibles.
 - `requirements-lock.txt`: versiones exactas verificadas en Windows.
@@ -98,6 +101,10 @@ Desde `proyecto/`:
 # Piloto completo con checkpoint y evaluación posterior.
 .\venv\Scripts\python.exe .\scripts\ejecutar_rag_piloto.py
 .\venv\Scripts\python.exe .\scripts\evaluar_rag_piloto.py
+
+# Baseline con el mismo warm-up y comparación controlada.
+.\venv\Scripts\python.exe .\scripts\ejecutar_baseline_controlado.py
+.\venv\Scripts\python.exe .\scripts\evaluar_comparacion_controlada.py
 ```
 
 El recuperador usa [`paraphrase-multilingual-MiniLM-L12-v2`](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2). La primera validación cruzada español→inglés obtuvo `Hit@1 = 80 %`, `Hit@3 = 90 %` y una latencia media de `14,40 ms`. El modelo se descarga la primera vez y queda en una caché local ignorada por Git.
@@ -126,7 +133,19 @@ Las 60 generaciones finalizaron sin errores. Promedios:
 
 GPT-4o mini consumió USD 0,002958 en total. Los costos locales publicados por el código continúan siendo provisionales porque dependen de una tarifa de instancia pendiente de reemplazar por una fuente real.
 
-La comparación de latencia contra el baseline original **no es causalmente válida todavía**: el piloto RAG precalentó LLaMA y Mistral, mientras que la primera corrida sin RAG incluyó cargas frías. Se necesita repetir el baseline con el mismo protocolo y en condiciones temporales comparables.
+### Comparación controlada contra el baseline
+
+Se repitió el baseline con el mismo calentamiento y en la misma sesión de trabajo. Esta comparación reemplaza a la histórica para analizar el efecto de RAG:
+
+| Modelo | BERTScore sin RAG | BERTScore con RAG | Δ BERTScore | Δ ROUGE-L | Latencia sin RAG | Latencia con RAG |
+|---|---:|---:|---:|---:|---:|---:|
+| GPT-4o mini | 0,7121 | 0,7526 | +0,0405 | +0,0690 | 1,723 s | 1,591 s |
+| LLaMA 3.1 8B | 0,7151 | 0,7213 | +0,0061 | −0,0255 | 1,213 s | 1,496 s |
+| Mistral | 0,7058 | 0,7333 | +0,0275 | +0,0414 | 1,350 s | 1,867 s |
+
+RAG aumentó la latencia local un 23,3 % en LLaMA y un 38,3 % en Mistral. La API de GPT fue un 7,6 % más rápida con RAG en esta corrida, pese a recibir 9,35 veces más tokens de entrada; esto se interpreta como variabilidad del servicio remoto, no como una aceleración causada por RAG.
+
+El costo real de las 20 respuestas de GPT pasó de USD 0,001333 sin RAG a USD 0,002958 con RAG. Los costos de los modelos locales siguen siendo provisionales porque dependen del supuesto pendiente de USD 0,75 por hora de instancia.
 
 ## Ejecutar el notebook
 
