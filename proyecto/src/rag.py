@@ -25,6 +25,7 @@ MODELO_EMBEDDINGS = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
 DOCUMENTOS_POR_INTENCION = 3
 UMBRAL_SIMILITUD_FUGA = 0.90
 SEMILLA = 42
+PATRON_MARCADOR = re.compile(r"\{\{[^{}]+\}\}")
 
 
 def normalizar_texto(texto: str) -> str:
@@ -41,6 +42,23 @@ def _similitud_superficial(a: str, b: str) -> float:
 def _limpiar_espacios_lineas(texto: str) -> str:
     """Quita espacios residuales al final de líneas sin alterar el contenido."""
     return "\n".join(linea.rstrip() for linea in str(texto).splitlines()).strip()
+
+
+def restaurar_marcadores(original: str, traduccion: str) -> str:
+    """Restaura en una traducción los marcadores ``{{...}}`` del original.
+
+    Los reemplaza por posición y falla explícitamente si la traducción agregó o
+    eliminó marcadores, porque en ese caso no existe una corrección inequívoca.
+    """
+    marcadores_originales = PATRON_MARCADOR.findall(str(original))
+    marcadores_traducidos = PATRON_MARCADOR.findall(str(traduccion))
+    if len(marcadores_originales) != len(marcadores_traducidos):
+        raise ValueError(
+            "La traducción cambió la cantidad de marcadores: "
+            f"{len(marcadores_originales)} -> {len(marcadores_traducidos)}."
+        )
+    pendientes = iter(marcadores_originales)
+    return PATRON_MARCADOR.sub(lambda _: next(pendientes), str(traduccion))
 
 
 def construir_corpus_conocimiento(

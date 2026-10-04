@@ -7,14 +7,18 @@ El corpus proviene de [Bitext Customer Support LLM Chatbot Training Dataset](htt
 ## Contenido
 
 - `src/`: corpus, clientes de OpenAI/Ollama, costos y recuperación RAG.
-- `tests/`: 24 pruebas unitarias sin llamadas reales a APIs.
+- `tests/`: 26 pruebas unitarias sin llamadas reales a APIs.
 - `notebooks/02_fundamentos.ipynb`: experimento reproducible del baseline sin RAG.
 - `notebooks/03_rag_piloto.ipynb`: piloto RAG; la generación está desactivada por defecto.
 - `data/corpus_es_muestra.csv`: muestra traducida para evitar repetir costo y tiempo.
 - `data/conocimiento_rag.csv`: 81 documentos Bitext, tres por intención, sin solapamientos directos con la evaluación.
 - `data/conocimiento_rag_auditoria.json`: trazabilidad de duplicados y fugas excluidas.
+- `data/conocimiento_rag_es.csv`: traducción controlada usada como análisis de sensibilidad.
+- `data/conocimiento_rag_es_auditoria.json`: tokens, costo y correcciones de marcadores de la traducción.
 - `resultados_fundamentos_20260913_1422.csv`: resultados de la primera corrida.
 - `resultados_recuperacion_rag_en.csv`: validación inicial español→inglés del recuperador.
+- `resultados_recuperacion_rag_es.csv`: validación con consultas y conocimiento en español.
+- `resultados_smoke_rag_local.json`: cuatro generaciones RAG de control con los modelos locales.
 - `TF_Juan_Bautista_Xifro_2026.docx`: única versión vigente de la tesis.
 - `requirements.txt`: dependencias Python reproducibles.
 - `requirements-lock.txt`: versiones exactas verificadas en Windows.
@@ -71,7 +75,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\iniciar_ollama.ps1
 .\.ollama-bin\ollama.exe list
 ```
 
-El resultado esperado es `24 passed`. Antes de ejecutar el experimento generativo, Ollama debe estar activo en `http://localhost:11434`.
+El resultado esperado es `26 passed`. Antes de ejecutar el experimento generativo, Ollama debe estar activo en `http://localhost:11434`.
 
 ## Preparar y validar RAG
 
@@ -83,9 +87,12 @@ Desde `proyecto/`:
 
 # Valida Hit@1, Hit@3 y latencia sin generar respuestas.
 .\venv\Scripts\python.exe .\scripts\validar_recuperacion_rag.py
+
+# Smoke test sin costo de API: dos consultas en LLaMA y Mistral.
+.\venv\Scripts\python.exe .\scripts\smoke_rag_local.py
 ```
 
-La primera validación cruzada español→inglés obtuvo `Hit@1 = 80 %`, `Hit@3 = 90 %` y una latencia media de recuperación de `14,40 ms`. El modelo de embeddings se descarga la primera vez y queda en una caché local ignorada por Git.
+El recuperador usa [`paraphrase-multilingual-MiniLM-L12-v2`](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2). La primera validación cruzada español→inglés obtuvo `Hit@1 = 80 %`, `Hit@3 = 90 %` y una latencia media de `14,40 ms`. El modelo se descarga la primera vez y queda en una caché local ignorada por Git.
 
 La traducción controlada del conocimiento se realiza por separado:
 
@@ -93,7 +100,11 @@ La traducción controlada del conocimiento se realiza por separado:
 .\venv\Scripts\python.exe .\scripts\traducir_corpus_rag.py
 ```
 
-Ese comando sí usa GPT-4o mini y tiene costo de API. Guarda cada avance en `data/conocimiento_rag_es.csv`, por lo que puede reanudarse después de una interrupción sin repetir documentos ya traducidos.
+Ese comando usa GPT-4o mini solamente si existen filas pendientes. Guarda cada avance en `data/conocimiento_rag_es.csv`, por lo que puede reanudarse después de una interrupción sin repetir documentos ya traducidos. La corrida completa costó USD 0,010899.
+
+### Decisión de idioma del conocimiento
+
+La traducción no mejoró la recuperación: obtuvo `Hit@1 = 70 %` y `Hit@3 = 85 %`, con `14,56 ms` de latencia media. También se probó exploratoriamente `multilingual-e5-small` con los prefijos de recuperación recomendados por su documentación; su mejor variante alcanzó `70 % / 85 %`. Por eso el piloto generativo fija como condición principal MiniLM con el conocimiento original en inglés. La variante española se conserva como análisis de sensibilidad y esta decisión deberá confirmarse con la muestra ampliada.
 
 ## Ejecutar el notebook
 

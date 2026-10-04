@@ -87,6 +87,22 @@ def test_crear_texto_rag_prefiere_espanol_y_tolera_nulos():
     assert "register" in rag.crear_texto_rag(fila_sin_es)
 
 
+def test_restaurar_marcadores_conserva_tokens_originales():
+    original = "Track {{Order Number}} with {{Tracking Number}}"
+    traduccion = "Seguí {{Número de Pedido}} con {{Número de Seguimiento}}"
+    assert rag.restaurar_marcadores(original, traduccion) == (
+        "Seguí {{Order Number}} con {{Tracking Number}}"
+    )
+
+
+def test_restaurar_marcadores_rechaza_cantidad_distinta():
+    try:
+        rag.restaurar_marcadores("Usá {{PIN}}", "Usá tu PIN")
+        assert False, "Debía detectar la eliminación del marcador"
+    except ValueError as exc:
+        assert "cantidad de marcadores" in str(exc)
+
+
 class _EmbedderFake:
     def encode(self, textos, **kwargs):
         vectores = []

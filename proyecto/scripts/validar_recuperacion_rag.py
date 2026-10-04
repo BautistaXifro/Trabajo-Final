@@ -33,7 +33,7 @@ def parse_args():
     parser.add_argument(
         "--salida",
         type=Path,
-        default=PROYECTO / "resultados_recuperacion_rag.csv",
+        default=PROYECTO / "resultados_recuperacion_rag_en.csv",
     )
     parser.add_argument("--top-k", type=int, default=3)
     return parser.parse_args()
