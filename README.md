@@ -1,4 +1,4 @@
-# Trabajo Final — Juan Bautista Xifro
+# Trabajo Final Juan Bautista Xifro
 
 Repositorio del Trabajo Final de Ingeniería en Sistemas de Información (UAI, 2026): evaluación comparativa de modelos de lenguaje para atención al cliente.
 
